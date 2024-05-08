@@ -2,14 +2,30 @@ const express = require("express");
 const router = express.Router();
 const { EmployeeModel } = require("../models/employeeModel")
 
-//get all employees
 router.get("/", async (req, res) => {
-    let perPage=30;
+    let perPage=20;
     let page=req.query.page?req.query.page-1:0;
+    let select = req.query.select;
+    let serchValue = req.query.serchValue;
+    let serchExp = new RegExp(serchValue,"i")
+    let myFilters = {}
+    if(select){ myFilters = {[select]:serchExp}}
+   
     try {
-        let data = await EmployeeModel.find({})
+        let data = await EmployeeModel.find(myFilters)
         .limit(perPage)
         .skip(page*perPage)
+        res.json(data);
+    }
+    catch (err) {
+        console.log(err);
+        res.json({ err })
+    }
+})
+
+router.get("/:id", async (req, res) => {
+    try {
+        let data = await EmployeeModel.findOne({_id:req.params.id})
         res.json(data);
     }
     catch (err) {
